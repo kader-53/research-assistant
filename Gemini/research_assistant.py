@@ -1,5 +1,4 @@
 import os
-# from openai import OpenAI
 import time
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass
@@ -132,35 +131,11 @@ class MockWebSearchTool:
 
 class ResearchAssistant:
     def __init__(self, api_key: str, model: str = "gemini-1.5-flash"):
-        # self.client = OpenAI(
-        #     base_url="https://openrouter.ai/api/v1",
-        #     api_key=api_key
-        # )
         genai.configure(api_key=api_key)
         self.model = model
         self.search_tool = MockWebSearchTool()
         self.research_log: List[ResearchStep] = []
         self.logger = LogCapture()
-
-    # def _call_llm(self, messages: List[Dict], tools: Optional[List[Dict]] = None) -> Any:
-    #     """Call the LLM with optional tool calling"""
-    #     try:
-    #         params = {
-    #             "model": self.model,
-    #             "messages": messages,
-    #             "temperature": 0.2,
-    #             "max_tokens": 2000
-    #         }
-            
-    #         if tools:
-    #             params["tools"] = tools
-    #             params["tool_choice"] = "auto"
-            
-    #         response = self.client.chat.completions.create(**params)
-    #         return response
-    #     except Exception as e:
-    #         self.logger.log(f"Error calling LLM: {e}")
-    #         return None
 
     def _call_llm(self, messages: List[Dict], tools: Optional[List[Dict]] = None) -> Any:
         """Call the Gemini LLM"""
@@ -319,17 +294,6 @@ class ResearchAssistant:
         """Generate a concise summary of the research process and findings"""
         total_sources = sum(len(step.results) for step in research_steps)
         
-        # key_stats = []
-        # lines = answer.split('\n')
-        # for line in lines:
-        #     line = line.strip()
-        #     if line and (('%' in line and any(char.isdigit() for char in line)) or 
-        #                 any(word in line.lower() for word in ['million', 'billion', 'increase', 'decrease', 'growth']) and 
-        #                 any(char.isdigit() for char in line)):
-        #         clean_line = line.replace('**', '').replace('*', '').strip('- •')
-        #         if len(clean_line) > 20 and len(key_stats) < 5:
-        #             key_stats.append(clean_line)
-        
         key_stats = self._generate_key_findings(question, research_steps)
 
         domains = set()
@@ -474,25 +438,4 @@ def main():
     except Exception as e:
         print(f"Error displaying research logs: {e}")
 
-    try:
-        print(f"\n{'='*50}")
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"research_results_{timestamp}.txt"
-            
-        with open(filename, 'w', encoding='utf-8') as f:
-            f.write(f"Research Results - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write("="*80 + "\n\n")
-            f.write(results['summary'])
-            f.write(f"\n\nDETAILED ANALYSIS:\n{'-'*40}\n")
-            f.write(results['answer'])
-            f.write(f"\n\nRESEARCH LOGS:\n{'-'*40}\n")
-            f.write(results['detailed_logs'])
-                
-            print(f"saved to {filename}")
-    except Exception as e:
-        print(f"Error saving results: {e}")
-    
-    print(f"\nResearch session completed successfully!")
-
-if __name__ == "__main__":
-    main()
+  
