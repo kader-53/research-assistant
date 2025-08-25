@@ -200,7 +200,7 @@ class ResearchAssistant:
         """Check if we have relevant results for the question"""
         # 1. If most searches returned zero results, we likely have no relevant data
         total_results = sum(len(step.results) for step in research_steps)
-        if total_results < 2:  # Require at least 2 results total
+        if total_results < 3:  # Require at least 2 results total
             return False
 
         # 2. Extract keywords from question
@@ -252,7 +252,7 @@ class ResearchAssistant:
         4. Structure your response with clear sections/paragraphs
         5. Highlight key trends, developments, and implications
         6. Be objective and balanced in your analysis
-
+        7. If there are no findings in research context that matches the question, dont answer the question. just say you dont have enough data to answer that question.
         Provide a well-structured, informative response that demonstrates deep analysis of the research findings.
         """
         
