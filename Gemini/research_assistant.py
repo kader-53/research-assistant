@@ -221,10 +221,39 @@ class ResearchAssistant:
         
         return research_steps
 
+    def _has_relevant_results(self, question: str, research_steps: List[ResearchStep]) -> bool:
+        """Check if we have relevant results for the question"""
+        # 1. If most searches returned zero results, we likely have no relevant data
+        total_results = sum(len(step.results) for step in research_steps)
+        if total_results < 2:  # Require at least 2 results total
+            return False
+
+        # 2. Extract keywords from question
+        question_keywords = set(question.lower().split())
+        common_words = {'what', 'how', 'why', 'when', 'where', 'is', 'are', 'the', 'to', 'and', 
+                        'of', 'in', 'on', 'a', 'an', 'for', 'with', 'about', 'that'}
+        question_keywords = question_keywords - common_words
+
+        if not question_keywords:  # If no meaningful keywords remain
+            return True  # Default to attempting an answer
+
+        # 3. Check if sources contain relevant keywords
+        relevant_sources = 0
+        for step in research_steps:
+            for result in step.results:
+                source_text = f"{result.title} {result.snippet}".lower()
+                if any(keyword in source_text for keyword in question_keywords):
+                    relevant_sources += 1
+
+        # Return true if we have enough relevant sources (proportional to total)
+        return relevant_sources >= min(2, total_results // 2)
 
     def _synthesize_answer(self, question: str, research_steps: List[ResearchStep]) -> str:
         """Synthesize research findings into a comprehensive answer"""
-        
+        # Check if we have relevant results before attempting synthesis
+        if not self._has_relevant_results(question, research_steps):
+            return f"I'm sorry, but I don't have enough relevant information to answer the question: \"{question}\"\n\nThe research didn't yield sufficient data on this topic. Please try a different question or topic."
+    
         # Prepare context from research
         context = ""
         for i, step in enumerate(research_steps, 1):
